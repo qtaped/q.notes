@@ -1,5 +1,9 @@
 # q.notes changelog
 
+## 0.9.1 - 2024-05-28
+### Added:
+- maximum directories limit
+
 ## 0.9 - 2024-05-27
 ### New:
 - first public commit
