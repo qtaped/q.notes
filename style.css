@@ -460,6 +460,7 @@
             .button-container {
                 padding: 0;
             }
+        }
 
         @media only screen and (max-device-width: 892px) and (orientation: landscape) and (min-aspect-ratio: 13/9) {
             .container {
