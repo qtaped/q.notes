@@ -32,9 +32,9 @@
     }
 
     // Get the list of filenames to move from the POST request
-    $fileNames = json_decode($_POST['fileNames'], true);
-    asort($fileNames, SORT_DESC); // sort descending order
-    $movedFilesCount = count($fileNames);
+    $noteNames = json_decode($_POST['noteNames'], true);
+    asort($noteNames, SORT_DESC); // sort descending order
+    $movedFilesCount = count($noteNames);
 
     // Define the source and destination dir paths
     $sourceDirPath = $notesDir . $selectedDir . "/";
@@ -42,27 +42,27 @@
 
         // Get the list of txt files in the destination dir to check the limit
         $files = array_diff(scandir($destinationDirPath), array('..', '.'));
-        $textFiles = array_filter($files, function ($fileName) {
-            return pathinfo($fileName, PATHINFO_EXTENSION) === 'txt';
+        $textFiles = array_filter($files, function ($noteName) {
+            return pathinfo($noteName, PATHINFO_EXTENSION) === 'txt';
         });
-        $filesCount = count($textFiles);
+        $notesCount = count($textFiles);
         
-        if ($filesCount + $movedFilesCount >= $notesLimit) {
+        if ($notesCount + $movedFilesCount >= $notesLimit) {
             echo "ERROR: Exceed $notesLimit notes.";
             http_response_code(500);
             exit(1);
         }
 
-    foreach ($fileNames as $fileName) { 
+    foreach ($noteNames as $noteName) { 
          // Move the file
-        $sourceFilePath = $sourceDirPath . $fileName;
-        $destinationFilePath = $destinationDirPath . $fileName;
+        $sourceFilePath = $sourceDirPath . $noteName;
+        $destinationFilePath = $destinationDirPath . $noteName;
         if (file_exists($sourceFilePath)) {
             if (file_exists($destinationFilePath)) {
              // Find the highest numeric filename in the destination dir
             $maxNumber = 0;
-            foreach ($textFiles as $file) {
-                 $numericPart = intval(pathinfo($file, PATHINFO_FILENAME));
+            foreach ($textFiles as $note) {
+                 $numericPart = intval(pathinfo($note, PATHINFO_FILENAME));
                 if ($numericPart > $maxNumber) {
                      $maxNumber = $numericPart;
                  }
@@ -80,7 +80,7 @@
                    }
         } else {
              // Handle error if file does not exist in source dir
-            echo "Error: File '$fileName' does not exist in the source dir.";
+            echo "Error: File '$noteName' does not exist in the source dir.";
             exit;
          }
      }

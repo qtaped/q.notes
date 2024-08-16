@@ -22,8 +22,8 @@
     }
 
     // Get the filename and content from the POST request
-    if (isset($_POST['fileName']) && preg_match('/^[a-zA-Z0-9-_]+\.txt$/', $_POST['fileName'])) {
-        $fileName = $_POST['fileName'];
+    if (isset($_POST['noteName']) && preg_match('/^[a-zA-Z0-9-_]+\.txt$/', $_POST['noteName'])) {
+        $noteName = $_POST['noteName'];
     } else {
         echo "ERROR: Invalid file name.";
         exit(1);
@@ -41,9 +41,9 @@
     // Check if the content size exceeds the limit
     if ($contentSize <= $sizeLimit) {
         // Save the content to the file in the selected dir
-        if (!file_put_contents($dirPath . $fileName, $content)) {
+        if (!file_put_contents($dirPath . $noteName, $content)) {
             http_response_code(500); // Set the error status code to 500
-            echo 'Error writing file. Check permissions or try again.';
+            echo 'Error writing note. Check permissions or try again.';
             exit(1);
         }
     } else {

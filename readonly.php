@@ -27,31 +27,31 @@
             $selectedDir = $dirNames[0];
         }
 
-        // Get the list of files from the selected dir
+        // Get the list of notes from the selected dir
         $dirPath = $notesDir . $selectedDir . "/";
-        $files = array_diff(scandir($dirPath), array('..', '.'));
+        $notes = array_diff(scandir($dirPath), array('..', '.'));
 
-        // Filter out non-text files
-        $textFiles = array_filter($files, function ($fileName) {
-            return pathinfo($fileName, PATHINFO_EXTENSION) === 'txt';
+        // Filter out non-text notes
+        $textFiles = array_filter($notes, function ($noteName) {
+            return pathinfo($noteName, PATHINFO_EXTENSION) === 'txt';
         });
 
-        // Sort files
+        // Sort notes
         usort($textFiles, function ($a, $b) {
             return strnatcasecmp($b, $a);
         });
 
-        // Print number of current txt files
-        $filesCount = count($textFiles);
+        // Print number of current txt notes
+        $notesCount = count($textFiles);
         echo "<div class='head-container'>
-                <h2 class='files-count'>$filesCount note". (($filesCount > 1) ? "s" : "") .".</h2>
+                <h2 class='notes-count'>$notesCount note". (($notesCount > 1) ? "s" : "") .".</h2>
                     <ul class='dir-list'>";
-        // Count all other txt files
+        // Count all other txt notes
         foreach ($dirNames as $dir) {
             $allDirPath = $notesDir . $dir . "/";
             $allFiles = array_diff(scandir($allDirPath), array('..', '.'));
-            $allTextFiles = array_filter($allFiles, function ($fileName) {
-            return pathinfo($fileName, PATHINFO_EXTENSION) === 'txt';
+            $allTextFiles = array_filter($allFiles, function ($noteName) {
+            return pathinfo($noteName, PATHINFO_EXTENSION) === 'txt';
             });
             $notesCount = count($allTextFiles);
             if ($dir !== $selectedDir) {
@@ -72,18 +72,18 @@
     </div>
     <?php
 
-        // Display files
-        foreach ($textFiles as $file) {
-            if (is_file($dirPath . $file)) {
-                $content = file_get_contents($dirPath . $file);
-                $fileName = pathinfo($file, PATHINFO_FILENAME);
-                $modificationDate = date("Y-m-d H:i:s", filemtime($dirPath . $file));
-                echo "<div class='file-container'>
+        // Display notes
+        foreach ($textFiles as $note) {
+            if (is_file($dirPath . $note)) {
+                $content = file_get_contents($dirPath . $note);
+                $noteName = pathinfo($note, PATHINFO_FILENAME);
+                $modificationDate = date("Y-m-d H:i:s", filemtime($dirPath . $note));
+                echo "<div class='note-container'>
 
-                        <div class='file' data-file='$file'>
+                        <div class='note' data-file='$note'>
                             <div class='content'>$content</div>
-                            <div class='file-info'>
-                                <span class='file-name'><a href='$notesDir$selectedDir/$fileName.txt' target='_blank' title='open $selectedDir/$fileName.txt'>NOTE #$fileName</a></span>
+                            <div class='note-info'>
+                                <span class='note-name'><a href='$notesDir$selectedDir/$noteName.txt' target='_blank' title='open $selectedDir/$noteName.txt'>NOTE #$noteName</a></span>
                                 <span class='modification-date'>$modificationDate</span>
                             </div>
                         </div>
@@ -108,7 +108,7 @@
           }
     };
 
-    let notesCount = document.querySelectorAll('.file-container').length;
+    let notesCount = document.querySelectorAll('.note-container').length;
     if (notesCount <= 4 ) addEmptyDivs(5 - notesCount);
 
 </script>

@@ -36,37 +36,37 @@
             $selectedDir = $dirNames[0];
         }
 
-        // Get the list of files from the selected dir
+        // Get the list of notes from the selected dir
         $dirPath = $notesDir . $selectedDir . "/";
-        $files = array_diff(scandir($dirPath), array('..', '.'));
+        $notes = array_diff(scandir($dirPath), array('..', '.'));
 
-        // Filter out non-text files
-        $textFiles = array_filter($files, function ($fileName) {
-            return pathinfo($fileName, PATHINFO_EXTENSION) === 'txt';
+        // Filter out non-text notes
+        $textNotes = array_filter($notes, function ($noteName) {
+            return pathinfo($noteName, PATHINFO_EXTENSION) === 'txt';
         });
 
-        // Sort files
-        usort($textFiles, function ($a, $b) {
+        // Sort notes
+        usort($textNotes, function ($a, $b) {
             return strnatcasecmp($b, $a);
         });
 
-        // Print number of current txt files
-        $filesCount = count($textFiles);
+        // Print number of current txt notes
+        $notesCount = count($textNotes);
         echo "<div class='head-container'>
-                <h2 class='files-count'>$filesCount note". (($filesCount > 1) ? "s" : "") .".</h2>
+                <h2 class='notes-count'>$notesCount note". (($notesCount > 1) ? "s" : "") .".</h2>
                     <ul class='dir-list'>";
-        // Count all other txt files
+        // Count all other txt notes
         foreach ($dirNames as $dir) {
             $allDirPath = $notesDir . $dir . "/";
-            $allFiles = array_diff(scandir($allDirPath), array('..', '.'));
-            $allTextFiles = array_filter($allFiles, function ($fileName) {
-            return pathinfo($fileName, PATHINFO_EXTENSION) === 'txt';
+            $allNotes = array_diff(scandir($allDirPath), array('..', '.'));
+            $allTextNotes = array_filter($allNotes, function ($noteName) {
+            return pathinfo($noteName, PATHINFO_EXTENSION) === 'txt';
             });
-            $notesCount = count($allTextFiles);
+            $allNotesCount = count($allTextNotes);
             if ($dir !== $selectedDir) {
-                echo "<a href='?dir=$dir'><li>$dir <span class='count count-$dir'>$notesCount</span></li></a>";
+                echo "<a href='?dir=$dir'><li>$dir <span class='count count-$dir'>$allNotesCount</span></li></a>";
                 } else {
-                echo "<li class=\"active\">$dir <span class='count current-count'>$notesCount</span></li>";
+                echo "<li class=\"active\">$dir <span class='count current-count'>$allNotesCount</span></li>";
                 }
         }
         echo "</ul>
@@ -88,26 +88,26 @@
     </div>
 
 <?php
-        // Display files
+        // Display notes
         $index = 0;
-        foreach ($textFiles as $file) {
-            if (is_file($dirPath . $file)) {
+        foreach ($textNotes as $note) {
+            if (is_file($dirPath . $note)) {
                 $index++;
-                $content = file_get_contents($dirPath . $file);
-                $fileName = pathinfo($file, PATHINFO_FILENAME);
-                $modificationDate = date("Y-m-d H:i:s", filemtime($dirPath . $file));
-                echo "<div class='file-container'>
+                $content = file_get_contents($dirPath . $note);
+                $noteName = pathinfo($note, PATHINFO_FILENAME);
+                $modificationDate = date("Y-m-d H:i:s", filemtime($dirPath . $note));
+                echo "<div class='note-container'>
 
-                        <div class='file' data-file='$file'>
-                        <input type='checkbox' class='note-checkbox' data-file='$file'>
-                            <div class='saved-status'>File saved!</div>
+                        <div class='note' data-file='$note'>
+                        <input type='checkbox' class='note-checkbox' data-file='$note'>
+                            <div class='saved-status'>Note saved!</div>
                             <div class='individual-btn'>
                                 <button class='indi-move'>move</button>
                                 <button class='indi-delete'>delete</button>
                             </div>
                             <div tabindex ='$index' class='content' contenteditable='false'>$content</div>
-                            <div class='file-info'>
-                                <span class='file-name'><a href='$notesDir$selectedDir/$fileName.txt' target='_blank' title='open $selectedDir/$fileName.txt'>NOTE #$fileName</a></span>
+                            <div class='note-info'>
+                                <span class='note-name'><a href='$notesDir$selectedDir/$noteName.txt' target='_blank' title='open $selectedDir/$noteName.txt'>NOTE #$noteName</a></span>
                                 <div>
                                 <button class='save-btn'>save</button>
                                 <button class='cancel-btn'>✕</button>
@@ -160,8 +160,7 @@
     </div>
 
 <script>
-
-// Loading
+    // Loading
 
     document.addEventListener("DOMContentLoaded", function() {
         // This event listener ensures the DOM is fully loaded
@@ -208,7 +207,7 @@
 
 // Common Variables
 
-    var currentCount = '<?php echo $filesCount; ?>';
+    var currentCount = '<?php echo $notesCount; ?>';
     var selectedDir = '<?php echo $selectedDir; ?>';
     var newCount = currentCount;
     var unsavedFound = 0;
@@ -306,10 +305,10 @@
         checkbox.addEventListener("change", function () {
             updateSelectedNotesCount();
 
-          // Get the parent div of the checkbox (the one with class "file")
-         const fileDiv = checkbox.parentNode;
+          // Get the parent div of the checkbox (the one with class "note")
+         const noteDiv = checkbox.parentNode;
          // Get the sibling div with class "individual-btn"
-         const individualBtn = fileDiv.querySelector('.individual-btn');
+         const individualBtn = noteDiv.querySelector('.individual-btn');
          // Toggle the display property of the individual-btn div
          if (checkbox.checked) {
            individualBtn.style.display = 'block';
@@ -357,8 +356,8 @@
             moveSelectedBtn.classList.remove("disabled");
         }
 
-        var notesCount = (currentCount < newCount) ? currentCount : newCount;
-        if (notesCount <= 3) addEmptyDivs(4 - notesCount);
+        var allNotesCount = (currentCount < newCount) ? currentCount : newCount;
+        if (allNotesCount <= 3) addEmptyDivs(4 - allNotesCount);
 
         if (currentCount == 0 || newCount == 0) {
             selectAllBtn.classList.add("disabled");
@@ -378,18 +377,18 @@
 
 // Delete notes
 
-const handleDeleteRequest = (fileNames, checkboxes = null, button = null) => {
-    if (confirm(`Are you sure you want to delete ${fileNames.length > 1 ? 'selected notes' : 'this note'}?`)) {
+const handleDeleteRequest = (noteNames, checkboxes = null, button = null) => {
+    if (confirm(`Are you sure you want to delete ${noteNames.length > 1 ? 'selected notes' : 'this note'}?`)) {
         const xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 if (checkboxes) {
                     checkboxes.forEach((checkbox) => {
-                        const fileContainer = checkbox.closest('.file-container');
-                        if (fileContainer) {
-                            fileContainer.classList.add('remove-anim');
+                        const noteContainer = checkbox.closest('.note-container');
+                        if (noteContainer) {
+                            noteContainer.classList.add('remove-anim');
                             setTimeout(() => {
-                                fileContainer.remove();
+                                noteContainer.remove();
                             }, 500);
                         }
                         if (checkbox) checkbox.remove();
@@ -397,50 +396,50 @@ const handleDeleteRequest = (fileNames, checkboxes = null, button = null) => {
                         if (saveBtn) saveBtn.remove();
                     });
                 } else if (button) {
-                    const fileContainer = button.closest('.file-container');
-                    if (fileContainer) {
-                        fileContainer.classList.add('remove-anim');
+                    const noteContainer = button.closest('.note-container');
+                    if (noteContainer) {
+                        noteContainer.classList.add('remove-anim');
                         setTimeout(() => {
-                            fileContainer.remove();
+                            noteContainer.remove();
                         }, 500);
                     }
-                    const checkbox = button.closest('.file') ? button.closest('.file').querySelector('.note-checkbox') : null;
+                    const checkbox = button.closest('.note') ? button.closest('.note').querySelector('.note-checkbox') : null;
                     if (checkbox) checkbox.remove();
-                    const saveBtn = button.closest('.file') ? button.closest('.file').querySelector('.save-btn') : null;
+                    const saveBtn = button.closest('.note') ? button.closest('.note').querySelector('.save-btn') : null;
                     if (saveBtn) saveBtn.remove();
                 }
 
-                const newCount = currentCount - fileNames.length;
-                const filesCount = document.querySelector(".files-count");
-                const filesCurrentCount = document.querySelector(".current-count");
-                filesCount.textContent = `${newCount} ${newCount > 1 ? 'notes' : 'note'}.`;
-                filesCurrentCount.textContent = newCount;
+                const newCount = currentCount - noteNames.length;
+                const notesCount = document.querySelector(".notes-count");
+                const notesCurrentCount = document.querySelector(".current-count");
+                notesCount.textContent = `${newCount} ${newCount > 1 ? 'notes' : 'note'}.`;
+                notesCurrentCount.textContent = newCount;
                 currentCount = newCount;
 
                 updateSelectedNotesCount();
-                checkFilesUnsaved();
+                checkNotesUnsaved();
             }
         };
         xhttp.open("POST", "delete_note.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send(`dir=${encodeURIComponent(selectedDir)}&fileNames=${encodeURIComponent(JSON.stringify(fileNames))}`);
+        xhttp.send(`dir=${encodeURIComponent(selectedDir)}&noteNames=${encodeURIComponent(JSON.stringify(noteNames))}`);
     }
 };
 
 document.querySelectorAll('.indi-delete').forEach((button) => {
     button.addEventListener('click', () => {
-        const fileName = button.closest('.file').getAttribute('data-file');
-        handleDeleteRequest([fileName], null, button);
+        const noteName = button.closest('.note').getAttribute('data-file');
+        handleDeleteRequest([noteName], null, button);
     });
 });
 
 const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
 deleteSelectedBtn.addEventListener("click", () => {
     const checkboxes = document.querySelectorAll(".note-checkbox:checked");
-    const fileNames = Array.from(checkboxes).map(checkbox => checkbox.getAttribute("data-file"));
+    const noteNames = Array.from(checkboxes).map(checkbox => checkbox.getAttribute("data-file"));
 
-    if (fileNames.length > 0) {
-        handleDeleteRequest(fileNames, checkboxes);
+    if (noteNames.length > 0) {
+        handleDeleteRequest(noteNames, checkboxes);
     }
 });
 
@@ -462,26 +461,26 @@ deleteSelectedBtn.addEventListener("click", () => {
         moveDirList.innerHTML = '<?php echo $dirListHtml; ?>';
     };
 
-    const handleDirListClick = (li, fileNames, button) => {
+    const handleDirListClick = (li, noteNames, button) => {
         li.addEventListener('click', () => {
             const destinationDir = li.textContent;
             const xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    const newCount = currentCount - fileNames.length;
-                    const filesCurrentCount = document.querySelector('.current-count');
+                    const newCount = currentCount - noteNames.length;
+                    const notesCurrentCount = document.querySelector('.current-count');
                     const destinationCount = document.querySelector(`.count-${destinationDir}`);
-                    const filesCount = document.querySelector('.files-count');
+                    const notesCount = document.querySelector('.notes-count');
 
-                    filesCount.textContent = `${newCount} ${(newCount > 1) ? 'notes' : 'note'}.`;
-                    filesCurrentCount.textContent = newCount;
-                    destinationCount.textContent = parseInt(destinationCount.textContent) + fileNames.length;
+                    notesCount.textContent = `${newCount} ${(newCount > 1) ? 'notes' : 'note'}.`;
+                    notesCurrentCount.textContent = newCount;
+                    destinationCount.textContent = parseInt(destinationCount.textContent) + noteNames.length;
                     currentCount = newCount;
 
                     if (button) {
-                        button.closest('.file-container').classList.add('move-anim');
+                        button.closest('.note-container').classList.add('move-anim');
                         setTimeout(() => {
-                            button.closest('.file-container').remove();
+                            button.closest('.note-container').remove();
                             destinationCount.classList.add('bump-anim');
                             setTimeout(() => {
                                 destinationCount.classList.remove('bump-anim');
@@ -493,9 +492,9 @@ deleteSelectedBtn.addEventListener("click", () => {
                             const saveBtn = checkbox.parentNode.querySelector('.save-btn');
                             saveBtn.remove();
                             checkbox.checked = false;
-                            checkbox.closest('.file-container').classList.add('move-anim');
+                            checkbox.closest('.note-container').classList.add('move-anim');
                             setTimeout(() => {
-                                checkbox.closest('.file-container').remove();
+                                checkbox.closest('.note-container').remove();
                                 destinationCount.classList.add('bump-anim');
                                 setTimeout(() => {
                                     destinationCount.classList.remove('bump-anim');
@@ -509,25 +508,25 @@ deleteSelectedBtn.addEventListener("click", () => {
                     moveDirList.innerHTML = ' '; // Remove innerHTML to remove events
 
                     updateSelectedNotesCount();
-                    checkFilesUnsaved();
+                    checkNotesUnsaved();
                 }
             };
             xhttp.open("POST", "move_note.php", true);
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhttp.send(`selectedDir=${encodeURIComponent(selectedDir)}&destinationDir=${encodeURIComponent(destinationDir)}&fileNames=${encodeURIComponent(JSON.stringify(fileNames))}`);
+            xhttp.send(`selectedDir=${encodeURIComponent(selectedDir)}&destinationDir=${encodeURIComponent(destinationDir)}&noteNames=${encodeURIComponent(JSON.stringify(noteNames))}`);
         });
     };
 
-    const addDirListEventListeners = (fileNames, button = null) => {
+    const addDirListEventListeners = (noteNames, button = null) => {
         document.querySelectorAll('#dir-list li.dir').forEach((li) => {
-            handleDirListClick(li, fileNames, button);
+            handleDirListClick(li, noteNames, button);
         });
     };
 
     const handleMoveButtonClick = (button) => {
         displayMoveDirList(button);
-        const fileNames = [button.closest('.file').getAttribute('data-file')];
-        addDirListEventListeners(fileNames, button);
+        const noteNames = [button.closest('.note').getAttribute('data-file')];
+        addDirListEventListeners(noteNames, button);
     };
 
     document.querySelectorAll('.indi-move').forEach((button) => {
@@ -545,11 +544,11 @@ deleteSelectedBtn.addEventListener("click", () => {
 
     moveSelectedBtn.addEventListener("click", () => {
         var checkboxes = document.querySelectorAll(".note-checkbox:checked");
-        const fileNames = Array.from(checkboxes).map(checkbox => checkbox.getAttribute("data-file"));
+        const noteNames = Array.from(checkboxes).map(checkbox => checkbox.getAttribute("data-file"));
 
-        if (fileNames.length != 0) {
+        if (noteNames.length != 0) {
             displayMoveDirList(moveSelectedBtn);
-            addDirListEventListeners(fileNames);
+            addDirListEventListeners(noteNames);
         }
     });
 
@@ -559,7 +558,7 @@ deleteSelectedBtn.addEventListener("click", () => {
 
     function newNote() {
         const notesLimit = <?php echo NOTES_LIMIT; ?>;
-        checkFilesUnsaved();
+        checkNotesUnsaved();
 
         if (currentCount < notesLimit) {
              if (unsavedFound == 0) {
@@ -652,23 +651,23 @@ deleteSelectedBtn.addEventListener("click", () => {
 
 // Save notes
 
-    function updateSaveState(file) {
-        const content = file.querySelector(".content");
-        const saveButton = file.querySelector(".save-btn");
-        const cancelButton = file.querySelector(".cancel-btn");
+    function updateSaveState(note) {
+        const content = note.querySelector(".content");
+        const saveButton = note.querySelector(".save-btn");
+        const cancelButton = note.querySelector(".cancel-btn");
         const savedStatus = content.parentNode.querySelector(".saved-status");
-        const fileNameInfo = content.parentNode.querySelector(".file-name");
+        const noteNameInfo = content.parentNode.querySelector(".note-name");
         const modDate = content.parentNode.querySelector(".modification-date");
-        const checkbox = file.querySelector(".note-checkbox");
+        const checkbox = note.querySelector(".note-checkbox");
 
         var newContent = content.innerHTML.trim();
 
         saveButton.style.display = 'block';
         cancelButton.style.display = 'block';
         savedStatus.style.background = '#ff5555';
-        fileNameInfo.style.display = 'none';
+        noteNameInfo.style.display = 'none';
 
-        var fileName = content.parentNode.getAttribute("data-file");
+        var noteName = content.parentNode.getAttribute("data-file");
         var contentSize = getContentSize(newContent);
         var sizeLimit = <?php echo NOTE_SIZE_LIMIT; ?>;
         const brIndex = content.innerHTML.lastIndexOf('<br>');
@@ -678,7 +677,7 @@ deleteSelectedBtn.addEventListener("click", () => {
         var sizeLeft = sizeLimit - contentSize;
 
         // Update the content size left span
-        var sizeLeftSpan = file.querySelector('.content-size-left');
+        var sizeLeftSpan = note.querySelector('.content-size-left');
 
         if (sizeLeftSpan) {
             if (sizeLeft < 0) {
@@ -695,11 +694,11 @@ deleteSelectedBtn.addEventListener("click", () => {
             saveButton.style.display = 'none';
             cancelButton.style.display = 'none';
             savedStatus.style.background = '#ff8700';
-            fileNameInfo.style.display = 'block';
+            noteNameInfo.style.display = 'block';
             sizeLeftSpan.classList.add("warning");
             sizeLeftSpan.textContent = "unsaved";
             content.innerHTML = backupContent;
-            checkFilesUnsaved();
+            checkNotesUnsaved();
         }
 
         function saveNote(content) {
@@ -714,7 +713,7 @@ deleteSelectedBtn.addEventListener("click", () => {
                 xhttp.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         initialContent = newContent;
-                        fileNameInfo.style.display = 'block';
+                        noteNameInfo.style.display = 'block';
                         saveButton.style.display = 'none';
                         cancelButton.style.display = 'none';
                         saveButton.textContent = 'SAVE';
@@ -723,7 +722,7 @@ deleteSelectedBtn.addEventListener("click", () => {
                         sizeLeftSpan.classList.remove("warning");
                         sizeLeftSpan.textContent = " ";
                         content.contentEditable = 'false';
-                        checkFilesUnsaved();
+                        checkNotesUnsaved();
                     } else if (this.status == 500) {
                         saveButton.textContent = 'retry?';
                         sizeLeftSpan.classList.add("warning");
@@ -732,7 +731,7 @@ deleteSelectedBtn.addEventListener("click", () => {
                 };
                 xhttp.open("POST", "save_note.php", true);
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xhttp.send("dir=" + encodeURIComponent(selectedDir) + "&fileName=" + encodeURIComponent(fileName) + "&content=" + encodeURIComponent(newContent));
+                xhttp.send("dir=" + encodeURIComponent(selectedDir) + "&noteName=" + encodeURIComponent(noteName) + "&content=" + encodeURIComponent(newContent));
             } else {
                 sizeLeftSpan.textContent = "Too large.";
                 saveButton.textContent = "SAVE";
@@ -776,9 +775,9 @@ deleteSelectedBtn.addEventListener("click", () => {
         }
     };
 
-    const files = document.querySelectorAll(".file");
-    files.forEach(function (file) {
-        const content = file.querySelector(".content");
+    const notes = document.querySelectorAll(".note");
+    notes.forEach(function (note) {
+        const content = note.querySelector(".content");
         content.addEventListener('click', function (event) {
             editNote(content);
         });
@@ -795,12 +794,12 @@ deleteSelectedBtn.addEventListener("click", () => {
                 content.contentEditable = 'false';
         });
         content.addEventListener('input', function () {
-                updateSaveState(file);
-                checkFilesUnsaved();
+                updateSaveState(note);
+                checkNotesUnsaved();
         });
     });
 
-    function checkFilesUnsaved() {
+    function checkNotesUnsaved() {
         const buttons = document.getElementsByClassName("save-btn");
         unsavedFound = 0;
 
@@ -819,7 +818,7 @@ deleteSelectedBtn.addEventListener("click", () => {
     };
 
     window.onbeforeunload = function() {
-     checkFilesUnsaved(); 
+     checkNotesUnsaved(); 
          if (unsavedFound > 0) {
              return "There are notes unsaved. Are you sure you want to leave?";
          }
@@ -833,7 +832,7 @@ deleteSelectedBtn.addEventListener("click", () => {
       saveBtns.forEach(function(saveBtn) {
         saveBtn.click();
       });
-      checkFilesUnsaved();
+      checkNotesUnsaved();
     });
 
    function getContentSize(content) {
@@ -841,7 +840,7 @@ deleteSelectedBtn.addEventListener("click", () => {
        return bytes;
    }
 
-    // Function to check if selection is within a content file div
+    // Function to check if selection is within a content note div
     function isSelectionInContent(selection) {
         const content = document.querySelectorAll('.content');
         for (var i = 0; i < content.length; i++) {
@@ -977,6 +976,5 @@ deleteSelectedBtn.addEventListener("click", () => {
 
     updateSelectedNotesCount();
 </script>
-
 </body>
 </html>

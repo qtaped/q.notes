@@ -22,7 +22,7 @@
     }
 
     // Get the list of filenames to delete from the POST request
-    $fileNames = json_decode($_POST['fileNames'], true);
+    $noteNames = json_decode($_POST['noteNames'], true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         echo "ERROR: Invalid JSON input.";
         http_response_code(400);
@@ -30,25 +30,25 @@
     }
 
     // Validate file names
-    foreach ($fileNames as $fileName) {
-        if (!preg_match('/^[a-zA-Z0-9_-]+\.txt$/', $fileName)) {
-            echo "ERROR: Invalid file name detected.";
+    foreach ($noteNames as $noteName) {
+        if (!preg_match('/^[a-zA-Z0-9_-]+\.txt$/', $noteName)) {
+            echo "ERROR: Invalid note name detected.";
             http_response_code(400);
             exit(1);
         }
     }
 
-    // Iterate through the filenames and delete each file from the selected dir
-    foreach ($fileNames as $fileName) {
-        $filePath = $dirPath . $fileName;
-        if (file_exists($filePath)) {
-            if (!unlink($filePath)) {
-                echo "ERROR: Could not delete file " . htmlspecialchars($fileName, ENT_QUOTES, 'UTF-8') . ".";
+    // Iterate through the filenames and delete each note from the selected dir
+    foreach ($noteNames as $noteName) {
+        $notePath = $dirPath . $noteName;
+        if (file_exists($notePath)) {
+            if (!unlink($notePath)) {
+                echo "ERROR: Could not delete note " . htmlspecialchars($noteName, ENT_QUOTES, 'UTF-8') . ".";
                 http_response_code(500);
                 exit(1);
             }
         } else {
-            echo "ERROR: File " . htmlspecialchars($fileName, ENT_QUOTES, 'UTF-8') . " does not exist.";
+            echo "ERROR: File " . htmlspecialchars($noteName, ENT_QUOTES, 'UTF-8') . " does not exist.";
             http_response_code(400);
             exit(1);
         }
