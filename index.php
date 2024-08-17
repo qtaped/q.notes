@@ -5,7 +5,7 @@
     <title><?php echo APP_NAME; ?></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0" />
-    <link rel="stylesheet" href="style.css?v=0.9.1.1" type="text/css">
+    <link rel="stylesheet" href="style.css?v=0.9.2.1" type="text/css">
 </head>
 
 <body>
@@ -102,12 +102,12 @@
                         <input type='checkbox' class='note-checkbox' data-file='$note'>
                             <div class='saved-status'>Note saved!</div>
                             <div class='individual-btn'>
-                                <button class='indi-move'>move</button>
+                                    <button class='indi-move'>move</button>
                                 <button class='indi-delete'>delete</button>
                             </div>
                             <div tabindex ='$index' class='content' contenteditable='false'>$content</div>
                             <div class='note-info'>
-                                <span class='note-name'><a href='$notesDir$selectedDir/$noteName.txt' target='_blank' title='open $selectedDir/$noteName.txt'>NOTE #$noteName</a></span>
+                                <input type='text' class='indi-rename' placeholder='$noteName' maxlength='9' title='rename note, press enter to validate'>
                                 <div>
                                 <button class='save-btn'>save</button>
                                 <button class='cancel-btn'>✕</button>
@@ -160,7 +160,8 @@
     </div>
 
 <script>
-    // Loading
+
+// Loading
 
     document.addEventListener("DOMContentLoaded", function() {
         // This event listener ensures the DOM is fully loaded
@@ -175,7 +176,6 @@
             }
         });
     });
-
 
 // Fixes
 
@@ -203,7 +203,6 @@
             checkbox.dispatchEvent(new Event('change'));
         }
     });
-
 
 // Common Variables
 
@@ -260,7 +259,6 @@
             }
       }
     });
-
 
 // Select All
 
@@ -375,6 +373,43 @@
 
     };
 
+// Rename notes
+
+document.querySelectorAll('.indi-rename').forEach((renameField) => {
+    renameField.addEventListener("input", function() {
+        renameField.value = renameField.value.replace(/[^a-zA-Z0-9-_]/g, '').substring(0, 9);
+        renameField.classList.remove('warning');
+    });
+    renameField.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            const noteElement = renameField.closest('.note');
+            const oldNoteName = noteElement.getAttribute('data-file');
+            let newNoteName = renameField.value.trim();
+            newNoteName = `${newNoteName}.txt`;
+            handleRenameRequest(oldNoteName, newNoteName, renameField);   
+        }
+    });
+});
+
+const handleRenameRequest = (oldNoteName, newNoteName, renameField) => {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                if (this.status === 200) {
+                    // Reload the page to reflect changes
+                    renameField.value = '';
+                    window.location.reload();
+                } else {
+                    renameField.classList.add('warning');
+                }
+            }
+        };
+        xhttp.open("POST", "rename_note.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send(`dir=${encodeURIComponent(selectedDir)}&old_name=${encodeURIComponent(oldNoteName)}&new_name=${encodeURIComponent(newNoteName)}`);
+};
+
+
 // Delete notes
 
 const handleDeleteRequest = (noteNames, checkboxes = null, button = null) => {
@@ -442,8 +477,6 @@ deleteSelectedBtn.addEventListener("click", () => {
         handleDeleteRequest(noteNames, checkboxes);
     }
 });
-
-
 
 // Move notes
 
@@ -552,8 +585,6 @@ deleteSelectedBtn.addEventListener("click", () => {
         }
     });
 
-
-
 // Create note
 
     function newNote() {
@@ -592,7 +623,6 @@ deleteSelectedBtn.addEventListener("click", () => {
                 newNote();
             }
     });
-
 
 // Create dir
 
@@ -656,7 +686,7 @@ deleteSelectedBtn.addEventListener("click", () => {
         const saveButton = note.querySelector(".save-btn");
         const cancelButton = note.querySelector(".cancel-btn");
         const savedStatus = content.parentNode.querySelector(".saved-status");
-        const noteNameInfo = content.parentNode.querySelector(".note-name");
+        const noteNameInfo = content.parentNode.querySelector(".indi-rename");
         const modDate = content.parentNode.querySelector(".modification-date");
         const checkbox = note.querySelector(".note-checkbox");
 
@@ -876,7 +906,6 @@ deleteSelectedBtn.addEventListener("click", () => {
         editorMenu.style.top = (rect.bottom + window.pageYOffset) + 'px';
         editorMenu.style.left = (rect.left + window.pageXOffset) + 'px';
     }
-
 
     // Event listener for text selection
     document.addEventListener('selectionchange', toggleEditorMenu);

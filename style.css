@@ -101,15 +101,6 @@
             align-items: center;
         }
 
-        .note-name {
-            background-color: #555;
-        }
-
-        .note-name a {
-            text-decoration: none;
-            color: #CCC;
-        }
-
         .modification-date {
             font-size: 12px;
             color: #999999;
@@ -151,24 +142,24 @@
 
         #newNoteBtn                           { background-color: #4CAF50; }
         #newNoteBtn:hover                     { background-color: #45a049; }
-        #saveAllBtn                              { background-color: #f55; }
-        #saveAllBtn:hover                        { background-color: #e33; }
-        #selectAllBtn                            { background-color: #007bff; }
-        #selectAllBtn:hover                      { background-color: #0056b3; }
-        #moveSelectedBtn, .indi-move             { background-color: #55f; }
+        #saveAllBtn                           { background-color: #f55; }
+        #saveAllBtn:hover                     { background-color: #e33; }
+        #selectAllBtn                         { background-color: #007bff; }
+        #selectAllBtn:hover                   { background-color: #0056b3; }
+        #moveSelectedBtn, .indi-move          { background-color: #55f; }
         #moveSelectedBtn:hover,
-        .indi-move:hover                         { background-color: #44e; }
+        .indi-move:hover                      { background-color: #44e; }
         #deleteSelectedBtn,
         #delDirBtn, .indi-delete              { background-color: #f55; }
         #deleteSelectedBtn:hover,
         #delDirBtn:hover, .indi-delete:hover  { background-color: #e33; }
         #createDirBtn                         { background-color: #1c1c1c; border: 1px solid #444 !important; }
         #createDirBtn:hover                   { background-color: #333; border: 1px solid #45a049 !important; }
-        #readOnlyBtn                             { background-color: #222; color: #ccc;}
+        #readOnlyBtn                          { background-color: #222; color: #ccc;}
 
         input#newDir {
             color:#eee;
-            background-color: transparent;
+            background-color: #1e1e1e;
             border: 1px solid #444;
             font-size: 12px;
             font-family: monospace;
@@ -180,6 +171,23 @@
 
         input#newDir:focus {
             outline: 1px solid #45a049;
+        }
+
+        input.indi-rename {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            width: 64px;
+            text-align: center;
+            background-color: #555;
+            color: #CCC;
+        }
+
+        input.indi-rename:focus {
+            outline: 1px solid #007bff;
         }
 
         #createDirForm {
@@ -270,7 +278,7 @@
             transition: opacity 0.3s ease;
         }
 
-        .note-name, .save-btn, .cancel-btn,
+        .save-btn, .cancel-btn,
         .indi-delete, .indi-move,
         #createDirBtn {
             color: #FFF;
