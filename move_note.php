@@ -62,24 +62,38 @@
              // Find the highest numeric filename in the destination dir
             $maxNumber = 0;
             foreach ($textFiles as $note) {
-                 $numericPart = intval(pathinfo($note, PATHINFO_FILENAME));
-                if ($numericPart > $maxNumber) {
-                     $maxNumber = $numericPart;
-                 }
+                if (preg_match('/(\d+)(?!.*\d)/', pathinfo($note, PATHINFO_FILENAME), $matches)) {
+                        $numericPart = $matches[1];
+                        if ($numericPart > $maxNumber) {
+                            $maxNumber = intval($numericPart);
+                        }
+                    } else {
+                        $maxNumber = 1;
+                }
              }
 
-            // Increment the maximum number by 1 to create the new filename
             $newNumber = ($maxNumber + 1);
-            while (file_exists($destinationDirPath . '/' . $newNumber. ".txt")) {
-                $newNumber++;
+
+            while (true) {
+                $pattern = $destinationDirPath . '/*' . $newNumber . '.txt';
+                $numFiles = glob($pattern);
+                if (count($numFiles) > 0) {
+                    $newNumber++;
+                } else {
+                    break;
+                }
             }
-            $newFileName = $newNumber . ".txt";
+
+            if (is_numeric(pathinfo($noteName, PATHINFO_FILENAME))) {
+                $newFileName = $newNumber . ".txt";
+            } else {
+                $newFileName = preg_replace('/\d+$/', '', pathinfo($noteName, PATHINFO_FILENAME)) . $newNumber . ".txt";
+            }
             rename($sourceFilePath, $destinationDirPath . '/' . $newFileName);
             } else {
                 rename($sourceFilePath, $destinationFilePath);
                    }
         } else {
-             // Handle error if file does not exist in source dir
             echo "Error: File '$noteName' does not exist in the source dir.";
             exit;
          }

@@ -83,7 +83,7 @@
                         <div class='note' data-file='$note'>
                             <div class='content'>$content</div>
                             <div class='note-info'>
-                                <span class='note-name'><a href='$notesDir$selectedDir/$noteName.txt' target='_blank' title='open $selectedDir/$noteName.txt'>NOTE #$noteName</a></span>
+                                <input type='text' class='indi-rename' placeholder='$noteName' disabled>
                                 <span class='modification-date'>$modificationDate</span>
                             </div>
                         </div>

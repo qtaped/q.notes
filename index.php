@@ -5,7 +5,7 @@
     <title><?php echo APP_NAME; ?></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0" />
-    <link rel="stylesheet" href="style.css?v=0.9.2.1" type="text/css">
+    <link rel="stylesheet" href="style.css?v=0.9.3" type="text/css">
 </head>
 
 <body>
@@ -107,12 +107,13 @@
                             </div>
                             <div tabindex ='$index' class='content' contenteditable='false'>$content</div>
                             <div class='note-info'>
-                                <input type='text' class='indi-rename' placeholder='$noteName' maxlength='9' title='rename note, press enter to validate'>
+                                <input type='text' class='indi-rename' placeholder='$noteName' maxlength='9' title='rename note' autocomplete='off'>
+                                <span class='popup-rename'></span>
                                 <div>
                                 <button class='save-btn'>save</button>
                                 <button class='cancel-btn'>✕</button>
                                 </div>
-                                <span class='content-size-left'></span>
+                                <span class='status-msg'></span>
                                 <span class='modification-date'>$modificationDate</span>
                             </div>
                         </div>
@@ -376,17 +377,50 @@
 // Rename notes
 
 document.querySelectorAll('.indi-rename').forEach((renameField) => {
+    const popup = renameField.closest('.note').querySelector('.popup-rename');
     renameField.addEventListener("input", function() {
+        popup.style.display = 'block';
+        popup.classList.remove('warning');
+        popup.textContent = 'Press Enter to rename';
         renameField.value = renameField.value.replace(/[^a-zA-Z0-9-_]/g, '').substring(0, 9);
         renameField.classList.remove('warning');
+    });
+    renameField.addEventListener("focus", function() {
+        const noteElement = renameField.closest('.note');
+        const currentNoteName = noteElement.getAttribute('data-file').replace(/\.txt/g, '');
+        if (renameField.value === '') {
+            renameField.value = currentNoteName;
+        } else {
+            popup.classList.remove('warning');
+            popup.style.display = 'block';
+            popup.textContent = 'Press Enter to rename';
+        }
+    });
+    renameField.addEventListener("blur", function() {
+        const noteElement = renameField.closest('.note');
+        const currentNoteName = noteElement.getAttribute('data-file').replace(/\.txt/g, '');
+        if (renameField.value === currentNoteName || renameField.value == '') {
+            popup.style.display = 'none';
+            renameField.value = '';
+        } else {
+            popup.classList.add('warning');
+            popup.style.display = 'block';
+            popup.textContent = 'New name not saved';
+        }
     });
     renameField.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             const noteElement = renameField.closest('.note');
             const oldNoteName = noteElement.getAttribute('data-file');
-            let newNoteName = renameField.value.trim();
-            newNoteName = `${newNoteName}.txt`;
-            handleRenameRequest(oldNoteName, newNoteName, renameField);   
+            const currentNoteName = oldNoteName.replace(/\.txt/g, '');
+            if (renameField.value === currentNoteName || renameField.value === '') {
+                popup.textContent = 'Type a new name'
+                renameField.value = '';
+            } else {
+                let newNoteName = renameField.value.trim();
+                newNoteName = `${newNoteName}.txt`;
+                handleRenameRequest(oldNoteName, newNoteName, renameField);
+            }
         }
     });
 });
@@ -395,12 +429,15 @@ const handleRenameRequest = (oldNoteName, newNoteName, renameField) => {
         const xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState === 4) {
+                const popup = renameField.closest('.note').querySelector('.popup-rename');
                 if (this.status === 200) {
-                    // Reload the page to reflect changes
-                    renameField.value = '';
+                    popup.classList.remove('warning');
+                    popup.textContent = 'Renamed.';
                     window.location.reload();
                 } else {
                     renameField.classList.add('warning');
+                    popup.classList.add('warning');
+                    popup.textContent = 'Name already exists?';
                 }
             }
         };
@@ -707,16 +744,16 @@ deleteSelectedBtn.addEventListener("click", () => {
         var sizeLeft = sizeLimit - contentSize;
 
         // Update the content size left span
-        var sizeLeftSpan = note.querySelector('.content-size-left');
+        var statusMsg = note.querySelector('.status-msg');
 
-        if (sizeLeftSpan) {
+        if (statusMsg) {
             if (sizeLeft < 0) {
             var sizeLeftNeg = sizeLeft * -1;
-            sizeLeftSpan.classList.add("warning");
-            sizeLeftSpan.textContent = sizeLeftNeg +"b in excess";
+            statusMsg.classList.add("warning");
+            statusMsg.textContent = sizeLeftNeg +"b in excess";
             } else {
-            sizeLeftSpan.classList.remove("warning");
-            sizeLeftSpan.textContent = sizeLeft + "b left";
+            statusMsg.classList.remove("warning");
+            statusMsg.textContent = sizeLeft + "b left";
             }
         }
 
@@ -725,8 +762,8 @@ deleteSelectedBtn.addEventListener("click", () => {
             cancelButton.style.display = 'none';
             savedStatus.style.background = '#ff8700';
             noteNameInfo.style.display = 'block';
-            sizeLeftSpan.classList.add("warning");
-            sizeLeftSpan.textContent = "unsaved";
+            statusMsg.classList.add("warning");
+            statusMsg.textContent = "unsaved";
             content.innerHTML = backupContent;
             checkNotesUnsaved();
         }
@@ -749,21 +786,21 @@ deleteSelectedBtn.addEventListener("click", () => {
                         saveButton.textContent = 'SAVE';
                         savedStatus.style.background = '#4CAF50';
                         modDate.textContent = "<?php echo date('Y-m-d H:i:s'); ?>";
-                        sizeLeftSpan.classList.remove("warning");
-                        sizeLeftSpan.textContent = " ";
+                        statusMsg.classList.remove("warning");
+                        statusMsg.textContent = " ";
                         content.contentEditable = 'false';
                         checkNotesUnsaved();
                     } else if (this.status == 500) {
                         saveButton.textContent = 'retry?';
-                        sizeLeftSpan.classList.add("warning");
-                        sizeLeftSpan.textContent = "error";
+                        statusMsg.classList.add("warning");
+                        statusMsg.textContent = "error";
                     }
                 };
                 xhttp.open("POST", "save_note.php", true);
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhttp.send("dir=" + encodeURIComponent(selectedDir) + "&noteName=" + encodeURIComponent(noteName) + "&content=" + encodeURIComponent(newContent));
             } else {
-                sizeLeftSpan.textContent = "Too large.";
+                statusMsg.textContent = "Too large.";
                 saveButton.textContent = "SAVE";
             }
         };
